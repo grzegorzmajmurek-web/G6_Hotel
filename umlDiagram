@@ -53,3 +53,129 @@
 | + dodajZnizke(): void            |
 | + pokazRezerwacje(): void        |
 +----------------------------------+
+
+
+
+------------------------------------------------------------------------------------------------------
+
+
++----------------------+
+|        Pokoj         |
++----------------------+
+| - numer: int         |
+| - pojemnosc: int     |
+| - typ: RoomCategory  |
+| - status: RoomStatus |
++----------------------+
+| + Pokoj(n,p,typ)     |
+| + getNumer(): int    |
+| + getPojemnosc(): int|
+| + getTyp(): string   |
+| + getStatus(): string|
++----------------------+
+
+          △
+          |
+          | «agregacja»
+          |
+
++-------------------------------------+
+|            Rezerwacja               |
++-------------------------------------+
+| # nazwa: string                     |
+| # pokoj: int                        |
+| # data: string                      |
+| # znizka: double                    |
+| # typGrupowy: GuestGroupType        |
+| # planWyzywienia: MealPlan          |
++-------------------------------------+
+| + Rezerwacja(n, p, d)               |
+| + typRezerwacji(): string           |
+| + getPokoj(): int                   |
+| + getData(): string                 |
+| + getNazwa(): string                |
+| + dodajZnizke(z: double): void      |
+| + pokaz(): void                     |
+| + obliczCene(): double              |
++-------------------------------------+
+
+    △           △           △           △
+    |           |           |           |
+    |       «dziedziczenie»             |
+    |           |           |           |
+
++----------+ +----------+ +----------+ +----------+
+|   Solo   | | Rodzina  | |  Grupa   |  |   Para   |
++----------+ +----------+ +----------+ +----------+
+| - wiek:  | | - dorośli| | - liczba | | - romant:|
+|   int    | |   : int  | |   Osob:  | |   bool   |
+|          | | - dzieci | |   int    | |          |
+|          | |   : int  | | - organ. | |          |
+|          | |          | |   : str  | |          |
++----------+ +----------+ +----------+ +----------+
+| +typRez()| | +typRez()| | +typRez()| | +typRez()|
+| +pakiet  | | +pakiet  | | +stawka  | | +pakiet  |
+|  Biznes()| |  Rodzin()| |  Grupow()| |  Romant()|
+|          | | +dodajLoz| | +getOrg()| | +dodajNie|
+|          | |  eczko() | |          | |  spodziank|
++----------+ +----------+ +----------+ +----------+
+
+
++---------------------------------------------+
+|                    Hotel                    |
++---------------------------------------------+
+| - rezerwacje: vector<Rezerwacja*>           |
+| - pokoje: vector<Pokoj>                     |
+| - udogodnienia: vector<Udogodnienie>        |
+| - cennik: map<MealPlan, double>             |
++---------------------------------------------+
+| + Hotel()                                   |
+| + czyDostepny(pokoj:int, data:str): bool    |
+| + sprawdzDostepnosc(): void                 |
+| + dodajRezerwacje(r: Rezerwacja*): void     |
+| + odmowRezerwacje(powod: string): void      |
+| + dodajZnizke(idRez:int, z:double): void    |
+| + pokazRezerwacje(): void                   |
+| + zamelduj(idRez: int): void                |
+| + wymelduj(idRez: int): void                |
+| + dodajUdogodnienie(u: Udogodnienie): void  |
+| + obliczCalkowitaCene(idRez:int): double    |
+| + generujRaport(): void                     |
+| + wyszukajRezerwacje(n:str): Rezerwacja*    |
++---------------------------------------------+
+                     |
+                     | «kompozycja»
+                     ◇
+
++--------------------------------------------+
+|              Udogodnienie                  |
++--------------------------------------------+
+| - nazwa: string                            |
+| - typ: AmenityType                         |
+| - cena: double                             |
+| - dostepnosc: bool                         |
+| - modelCenowy: PricingModel                |
++--------------------------------------------+
+| + Udogodnienie(n, t, c)                    |
+| + getNazwa(): string                       |
+| + getCena(): double                        |
+| + isDostepne(): bool                       |
+| + setDostepnosc(d: bool): void             |
++--------------------------------------------+
+
+
+LEGENDA SYMBOLI:
+  △   dziedziczenie (klasa pochodna → bazowa)
+  ◇   kompozycja   (Hotel zawiera Udogodnienie)
+  →   agregacja    (slabsza zaleznosc)
+  #   protected    (dostepne dla klas pochodnych)
+  -   private      (dostepne tylko w klasie)
+  +   public       (dostepne wszedzie)
+
+TYPY WYLICZENIOWE:
+  RoomCategory  : Standard | Deluxe | Suite | Penthouse
+  RoomStatus    : Available | Occupied | Maintenance
+  GuestGroupType: Solo | Couple | Family | Group | Corporate
+  MealPlan      : RoomOnly | BB | HalfBoard | FullBoard | AI
+  AmenityType   : Spa | Pool | Gym | Parking | Transfer
+  PricingModel  : Free | PerVisit | PerDay | PerPerson
