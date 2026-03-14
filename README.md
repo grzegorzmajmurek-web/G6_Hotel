@@ -1,206 +1,231 @@
-# 🏨 Hotel Management System
+# 🏨 System Zarządzania Hotelem
 
-> Object-oriented hotel reservation system written in **C++23**, built on Domain-Driven Design principles with full class hierarchy, amenity management, and dynamic pricing.
+<div align="center">
 
----
+![C++](https://img.shields.io/badge/C%2B%2B-23-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
+![OOP](https://img.shields.io/badge/Wzorzec-OOP-5b8dee?style=for-the-badge)
+![DDD](https://img.shields.io/badge/Design-DDD-4ecdc4?style=for-the-badge)
+![License](https://img.shields.io/badge/Licencja-MIT-f7b731?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Aktywny-26de81?style=for-the-badge)
 
-## 📐 Architecture Overview
+**Obiektowy system rezerwacji hotelowych napisany w C++23.**  
+Pełna hierarchia klas · Dynamiczne ceny · Zarządzanie udogodnieniami · Polimorficzne rezerwacje.
 
-The system is structured around **5 core classes** connected by inheritance and composition relationships.
-
-```
-Room  ──aggregation──▶  Reservation  ──inheritance──▶  Solo
-                                     ──inheritance──▶  Family
-                                     ──inheritance──▶  Group
-                                     ──inheritance──▶  Couple
-
-Hotel ──composition──▶  Amenity
-Hotel ──manages──────▶  Reservation*
-Hotel ──manages──────▶  Room
-```
+</div>
 
 ---
 
-## 🗂️ Class Reference
-
-### `Room`
-Base entity representing a physical hotel room.
-
-| Visibility | Member | Type | Description |
-|---|---|---|---|
-| `−` | `number` | `int` | Unique room identifier |
-| `−` | `capacity` | `int` | Max guest count |
-| `−` | `type` | `RoomCategory` | Standard / Deluxe / Suite / Penthouse |
-| `−` | `status` | `RoomStatus` | Available / Occupied / Maintenance |
-| `+` | `Room(n,c,type)` | constructor | Initialise with number, capacity, type |
-| `+` | `getNumber()` | `int` | Returns room number |
-| `+` | `getCapacity()` | `int` | Returns max capacity |
-| `+` | `getType()` | `string` | Returns category label |
-| `+` | `getStatus()` | `string` | Returns current status |
-
----
-
-### `Reservation`
-Abstract base class for all reservation types. Uses `protected` members so derived classes can read and override data.
-
-| Visibility | Member | Type | Description |
-|---|---|---|---|
-| `#` | `name` | `string` | Guest full name |
-| `#` | `room` | `int` | Assigned room number |
-| `#` | `date` | `string` | Check-in date |
-| `#` | `discount` | `double` | Applied discount (0.0 – 1.0) |
-| `#` | `groupType` | `GuestGroupType` | Solo / Couple / Family / Group / Corporate |
-| `#` | `mealPlan` | `MealPlan` | RoomOnly / BB / HalfBoard / FullBoard / AI |
-| `+` | `reservationType()` | `string` | **Pure virtual** — overridden by each subclass |
-| `+` | `calculatePrice()` | `double` | Base price × nights × meal plan modifier |
-| `+` | `addDiscount(d)` | `void` | Apply percentage discount |
-| `+` | `display()` | `void` | Print full reservation summary |
-
----
-
-### Reservation Subtypes
-
-#### `Solo`
-Single traveller. Unlocks business packages and late check-out perks.
+## 📐 Architektura systemu
 
 ```
-- age: int
-+ reservationType(): string   → returns "Solo"
-+ businessPackage(): void     → WiFi + workspace upgrade
-```
+Pokoj  ──agregacja──▷  Rezerwacja  ──dziedziczenie──▷  Solo
+                                   ├──dziedziczenie──▷  Rodzina
+                                   ├──dziedziczenie──▷  Grupa
+                                   └──dziedziczenie──▷  Para
 
-#### `Family`
-Two or more adults with children. Triggers cot availability and safety checks.
-
-```
-- adults: int
-- children: int
-+ reservationType(): string   → returns "Family"
-+ familyPackage(): void       → kids meal + adjoining rooms
-+ addCrib(): void             → request baby cot
-```
-
-#### `Group`
-10+ people. Activates group rate pricing and organiser contact.
-
-```
-- numberOfPersons: int
-- organiser: string
-+ reservationType(): string   → returns "Group"
-+ groupRate(): void           → apply group discount tier
-+ getOrganiser(): string
-```
-
-#### `Couple`
-Two adults. Unlocks romantic packages and surprise add-ons.
-
-```
-- romantic: bool
-+ reservationType(): string   → returns "Couple"
-+ romanticPackage(): void     → flowers + champagne + spa
-+ addSurprise(): void         → hotel-arranged surprise
+Hotel  ──kompozycja──◇  Udogodnienie
+Hotel  ──zarządza────▷  vector<Rezerwacja*>
+Hotel  ──zarządza────▷  vector<Pokoj>
 ```
 
 ---
 
-### `Hotel`
-Central controller. Owns all rooms and amenities, manages reservations.
+## 🗂️ Opis klas
 
-| Method | Signature | Description |
-|---|---|---|
-| `isAvailable` | `(room:int, date:str) → bool` | Check if room is free on a date |
-| `checkAvailability` | `() → void` | Print full availability grid |
-| `addReservation` | `(r: Reservation*) → void` | Register a new reservation |
-| `refuseReservation` | `(reason: string) → void` | Reject with logged reason |
-| `addDiscount` | `(resId:int, d:double) → void` | Apply discount to existing booking |
-| `showReservations` | `() → void` | List all active reservations |
-| `checkIn` | `(resId: int) → void` | Mark guest as arrived |
-| `checkOut` | `(resId: int) → void` | Finalise stay, update room status |
-| `addAmenity` | `(a: Amenity) → void` | Register spa / pool / gym etc. |
-| `calculateTotalPrice` | `(resId:int) → double` | Room + meals + amenities |
-| `generateReport` | `() → void` | Occupancy and revenue summary |
-| `findReservation` | `(n:str) → Reservation*` | Search by guest name |
+### `Pokoj`
 
----
+> Podstawowa encja reprezentująca fizyczny pokój hotelowy.
 
-### `Amenity`
-Represents a bookable hotel service. Owned by `Hotel` via **composition** — amenities cannot exist independently.
-
-| Visibility | Member | Type | Description |
-|---|---|---|---|
-| `−` | `name` | `string` | Display name (e.g. "Rooftop Spa") |
-| `−` | `type` | `AmenityType` | Spa / Pool / Gym / Parking / Transfer |
-| `−` | `price` | `double` | Base price in PLN |
-| `−` | `available` | `bool` | Booking open flag |
-| `−` | `pricingModel` | `PricingModel` | Free / PerVisit / PerDay / PerPerson |
-| `+` | `Amenity(n,t,p)` | constructor | — |
-| `+` | `getName()` | `string` | — |
-| `+` | `getPrice()` | `double` | — |
-| `+` | `isAvailable()` | `bool` | — |
-| `+` | `setAvailable(a)` | `void` | Open or close bookings |
+| Widoczność | Składowa | Typ | Opis |
+|:---:|---|---|---|
+| `−` | `numer` | `int` | Unikalny identyfikator pokoju |
+| `−` | `pojemnosc` | `int` | Maksymalna liczba gości |
+| `−` | `typ` | `RoomCategory` | Standard / Deluxe / Suite / Penthouse |
+| `−` | `status` | `RoomStatus` | Dostępny / Zajęty / Konserwacja |
+| `+` | `Pokoj(n, p, typ)` | konstruktor | Inicjalizacja z numerem, pojemnością i kategorią |
+| `+` | `getNumer()` | `int` | Zwraca numer pokoju |
+| `+` | `getPojemnosc()` | `int` | Zwraca maksymalną pojemność |
+| `+` | `getTyp()` | `string` | Zwraca nazwę kategorii |
+| `+` | `getStatus()` | `string` | Zwraca aktualny status pokoju |
 
 ---
 
-## 🏷️ Enumeration Types
+### `Rezerwacja` *(abstrakcyjna)*
+
+> Klasa bazowa dla wszystkich typów rezerwacji. Używa składowych `protected`, aby klasy pochodne mogły odczytywać i nadpisywać dane.
+
+| Widoczność | Składowa | Typ | Opis |
+|:---:|---|---|---|
+| `#` | `nazwa` | `string` | Imię i nazwisko gościa |
+| `#` | `pokoj` | `int` | Numer przydzielonego pokoju |
+| `#` | `data` | `string` | Data zameldowania (ISO 8601) |
+| `#` | `znizka` | `double` | Zastosowana zniżka `0.0 – 1.0` |
+| `#` | `typGrupowy` | `GuestGroupType` | Solo / Para / Rodzina / Grupa / Korporacja |
+| `#` | `planWyzywienia` | `MealPlan` | BezWyzywienia / BB / Polpensja / Pelna / AI |
+| `+` | `Rezerwacja(n, p, d)` | konstruktor | — |
+| `+` | `typRezerwacji()` | `string` | **Czysto wirtualna** — nadpisywana przez każdą podklasę |
+| `+` | `obliczCene()` | `double` | Cena bazowa × liczba nocy × modyfikator wyżywienia |
+| `+` | `dodajZnizke(z)` | `void` | Zastosuj procentową zniżkę do rezerwacji |
+| `+` | `pokaz()` | `void` | Wydrukuj pełne podsumowanie rezerwacji |
+
+---
+
+### Podtypy rezerwacji
+
+#### 👤 `Solo`
+Jeden dorosły. Odblokowuje pakiety biznesowe i przywileje późnego wymeldowania.
+
+```
+− wiek: int
++ typRezerwacji()   →  "Solo"
++ pakietBiznes()    →  WiFi + ulepszenie miejsca pracy
+```
+
+#### 👨‍👩‍👧‍👦 `Rodzina`
+Dwoje lub więcej dorosłych z dziećmi. Uruchamia dostępność łóżeczek, kontrole bezpieczeństwa i ceny posiłków dla dzieci.
+
+```
+− dorośli: int
+− dzieci: int
++ typRezerwacji()   →  "Rodzina"
++ pakietRodzinny()  →  posiłki dla dzieci + pokoje przylegające
++ dodajLozeczko()   →  zamów łóżeczko dziecięce
+```
+
+#### 👥 `Grupa`
+Dziesięć lub więcej osób. Uruchamia cennik grupowy i przechowuje dane kontaktowe organizatora.
+
+```
+− liczbaOsob: int
+− organizator: string
++ typRezerwacji()   →  "Grupa"
++ stawkaGrupowa()   →  zastosuj poziom zniżki grupowej
++ getOrganizator()  →  zwraca nazwę organizatora
+```
+
+#### 💑 `Para`
+Dwoje dorosłych. Odblokowuje pakiety romantyczne, szampana na powitanie i niespodzianki organizowane przez hotel.
+
+```
+− romantyczny: bool
++ typRezerwacji()   →  "Para"
++ pakietRomantyczny()  →  kwiaty + szampan + spa
++ dodajNiespodziankę() →  niespodzianka zorganizowana przez hotel
+```
+
+---
+
+### `Hotel` *(kontroler)*
+
+> Główna klasa. Posiada wszystkie pokoje i udogodnienia, zarządza cyklem życia rezerwacji.
+
+| Widoczność | Metoda | Zwraca | Opis |
+|:---:|---|---|---|
+| `−` | `rezerwacje` | `vector<Rezerwacja*>` | Polimorfyczna kolekcja wszystkich rezerwacji |
+| `−` | `pokoje` | `vector<Pokoj>` | Wszystkie zarejestrowane pokoje |
+| `−` | `udogodnienia` | `vector<Udogodnienie>` | Spa, basen, siłownia, parking… |
+| `−` | `cennik` | `map<MealPlan, double>` | Dzienny modyfikator ceny dla każdego planu |
+| `+` | `czyDostepny(pokoj, data)` | `bool` | Sprawdź czy pokój jest wolny w danym dniu |
+| `+` | `sprawdzDostepnosc()` | `void` | Wydrukuj siatkę dostępności pokoi |
+| `+` | `dodajRezerwacje(r)` | `void` | Zarejestruj nowy wskaźnik rezerwacji |
+| `+` | `odmowRezerwacje(powod)` | `void` | Odrzuć z zalogowanym powodem |
+| `+` | `dodajZnizke(idRez, z)` | `void` | Zastosuj zniżkę do istniejącej rezerwacji |
+| `+` | `pokazRezerwacje()` | `void` | Wylistuj wszystkie aktywne rezerwacje |
+| `+` | `zamelduj(idRez)` | `void` | Oznacz gościa jako przybyłego, zaktualizuj status pokoju |
+| `+` | `wymelduj(idRez)` | `void` | Zakończ pobyt, zwolnij pokój, wygeneruj fakturę |
+| `+` | `dodajUdogodnienie(u)` | `void` | Zarejestruj usługę spa / basen / siłownię |
+| `+` | `obliczCalkowitaCene(idRez)` | `double` | Pokój + wyżywienie + udogodnienia |
+| `+` | `generujRaport()` | `void` | Podsumowanie obłożenia i przychodów |
+| `+` | `wyszukajRezerwacje(nazwa)` | `Rezerwacja*` | Wyszukaj po nazwisku gościa |
+
+---
+
+### `Udogodnienie` *(kompozycja — należy do Hotel)*
+
+> Reprezentuje płatną usługę hotelową. Nie może istnieć niezależnie od klasy `Hotel`.
+
+| Widoczność | Składowa | Typ | Opis |
+|:---:|---|---|---|
+| `−` | `nazwa` | `string` | Nazwa wyświetlana, np. `"Spa na dachu"` |
+| `−` | `typ` | `AmenityType` | Spa / Basen / Siłownia / Parking / Transfer |
+| `−` | `cena` | `double` | Cena bazowa w walucie lokalnej |
+| `−` | `dostepnosc` | `bool` | Czy rezerwacje są aktualnie otwarte |
+| `−` | `modelCenowy` | `PricingModel` | Bezpłatny / ZaWizytę / ZaDzień / ZaOsobę |
+| `+` | `Udogodnienie(n, t, c)` | konstruktor | — |
+| `+` | `getNazwa()` | `string` | — |
+| `+` | `getCena()` | `double` | — |
+| `+` | `isDostepne()` | `bool` | — |
+| `+` | `setDostepnosc(d)` | `void` | Otwórz lub zamknij rezerwacje dla tej usługi |
+
+---
+
+## 🏷️ Typy wyliczeniowe
 
 ```cpp
-enum class RoomCategory   { Standard, Deluxe, Suite, Penthouse };
-enum class RoomStatus     { Available, Occupied, Maintenance };
-enum class GuestGroupType { Solo, Couple, Family, Group, Corporate };
-enum class MealPlan       { RoomOnly, BB, HalfBoard, FullBoard, AllInclusive };
-enum class AmenityType    { Spa, Pool, Gym, Parking, Transfer };
-enum class PricingModel   { Free, PerVisit, PerDay, PerPerson };
+enum class RoomCategory   { Standard, Deluxe, Suite, Penthouse                };
+enum class RoomStatus     { Dostepny, Zajety, Konserwacja                      };
+enum class GuestGroupType { Solo, Para, Rodzina, Grupa, Korporacja             };
+enum class MealPlan       { BezWyzywienia, BB, Polpensja, PelnaObsluga, AI    };
+enum class AmenityType    { Spa, Basen, Silownia, Parking, Transfer            };
+enum class PricingModel   { Bezplatny, ZaWizyte, ZaDzien, ZaOsobe             };
 ```
 
 ---
 
-## 🔗 Relationship Legend
+## 🔗 Legenda symboli
 
-| Symbol | Meaning |
-|---|---|
-| `△` | Inheritance — derived class extends base |
-| `◇` | Composition — child cannot exist without parent |
-| `→` | Aggregation — loose association |
-| `#` | Protected — accessible by derived classes |
-| `−` | Private — accessible within class only |
-| `+` | Public — accessible everywhere |
+| Symbol | Nazwa | Znaczenie |
+|:---:|---|---|
+| `△` | Dziedziczenie | Klasa pochodna rozszerza bazową. Dziecko dziedziczy wszystkie składowe `public` i `protected`. |
+| `◇` | Kompozycja | Dziecko nie może istnieć bez rodzica. `Udogodnienie` jest niszczone razem z `Hotel`. |
+| `→` | Agregacja | Słabe powiązanie. `Pokoj` może istnieć niezależnie od `Rezerwacji`. |
+| `−` | Prywatna | Dostępna tylko wewnątrz klasy deklarującej. |
+| `#` | Chroniona | Dostępna w klasie i wszystkich klasach pochodnych. |
+| `+` | Publiczna | Dostępna z dowolnego miejsca w programie. |
 
 ---
 
-## ⚙️ Build & Run
+## ⚙️ Kompilacja i uruchomienie
+
+**Wymagania:** GCC 13+ lub Clang 18+ z obsługą C++23.
 
 ```bash
-# Requires GCC 13+ or Clang 18+ with C++23 support
+# Bezpośrednia kompilacja
 g++ -std=c++23 -Wall -Wextra -o hotel main.cpp
 ./hotel
+
+# Z użyciem CMake
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+./build/hotel
 ```
 
 ---
 
-## 📁 File Structure
+## 📁 Struktura plików
 
 ```
 hotel-system/
 ├── src/
 │   ├── domain/
-│   │   ├── Room.hpp
-│   │   ├── Reservation.hpp
+│   │   ├── Pokoj.hpp
+│   │   ├── Rezerwacja.hpp
 │   │   ├── Solo.hpp
-│   │   ├── Family.hpp
-│   │   ├── Group.hpp
-│   │   ├── Couple.hpp
-│   │   └── Amenity.hpp
+│   │   ├── Rodzina.hpp
+│   │   ├── Grupa.hpp
+│   │   ├── Para.hpp
+│   │   └── Udogodnienie.hpp
 │   ├── Hotel.hpp
 │   ├── Hotel.cpp
 │   └── main.cpp
 ├── tests/
-│   └── hotel_tests.cpp
+│   └── hotel_testy.cpp
 ├── CMakeLists.txt
 └── README.md
 ```
 
 ---
 
-## 📜 License
+## 📜 Licencja
 
-MIT — free to use, modify and distribute.
+Ten projekt jest objęty licencją **MIT** — możesz go swobodnie używać, modyfikować i rozpowszechniać.
