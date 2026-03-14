@@ -1,0 +1,55 @@
++----------------------+
+|        Pokoj         |
++----------------------+
+| - numer: int         |
+| - pojemnosc: int     |
++----------------------+
+| + Pokoj(n:int,p:int) |
+| + getNumer(): int    |
+| + getPojemnosc():int |
++----------------------+
+ 
+ 
+              ▲
+              |
+              | dziedziczenie
+              |
++-------------------------------+
+|          Rezerwacja           |
++-------------------------------+
+| # nazwa: string               |
+| # pokoj: int                  |
+| # data: string                |
+| # znizka: double              |
++-------------------------------+
+| + Rezerwacja(n,p,d)           |
+| + typRezerwacji(): string     |
+| + getPokoj(): int             |
+| + getData(): string           |
+| + getNazwa(): string          |
+| + dodajZnizke(z:double): void |
+| + pokaz(): void               |
++-------------------------------+
+       ▲               ▲
+       |               |
++-------------+   +-------------+
+|   Rodzina   |   |    Grupa    |
++-------------+   +-------------+
+| + typRezerwacji(): string     |
++-------------+   +-------------+
+ 
+ 
++----------------------------------+
+|              Hotel               |
++----------------------------------+
+| - rezerwacje: vector<Rezerwacja*>|
+| - pokoje: vector<Pokoj>          |
++----------------------------------+
+| + Hotel()                        |
+| + czyDostepny(int,string): bool  |
+| + sprawdzDostepnosc(): void      |
+| + dodajRezerwacje(): void        |
+| + odmowRezerwacje(): void        |
+| + dodajZnizke(): void            |
+| + pokazRezerwacje(): void        |
++----------------------------------+
