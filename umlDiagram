@@ -164,18 +164,4 @@
 +--------------------------------------------+
 
 
-LEGENDA SYMBOLI:
-  △   dziedziczenie (klasa pochodna → bazowa)
-  ◇   kompozycja   (Hotel zawiera Udogodnienie)
-  →   agregacja    (slabsza zaleznosc)
-  #   protected    (dostepne dla klas pochodnych)
-  -   private      (dostepne tylko w klasie)
-  +   public       (dostepne wszedzie)
 
-TYPY WYLICZENIOWE:
-  RoomCategory  : Standard | Deluxe | Suite | Penthouse
-  RoomStatus    : Available | Occupied | Maintenance
-  GuestGroupType: Solo | Couple | Family | Group | Corporate
-  MealPlan      : RoomOnly | BB | HalfBoard | FullBoard | AI
-  AmenityType   : Spa | Pool | Gym | Parking | Transfer
-  PricingModel  : Free | PerVisit | PerDay | PerPerson
