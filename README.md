@@ -1,6 +1,5 @@
 # G6_Hotel
 
-<ul>
   <ol>
     <li>Składnie rezerwacji:</li>
       <ul>
@@ -31,4 +30,3 @@
 </ol>
 
 <ol><li>Sprawdzenie dostępności terminów pokoi</li></ol>
-</ul>
