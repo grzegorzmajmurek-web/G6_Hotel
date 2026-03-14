@@ -1,55 +1,63 @@
-+----------------------+
-|        Pokoj         |
-+----------------------+
-| - numer: int         |
-| - pojemnosc: int     |
-+----------------------+
-| + Pokoj(n:int,p:int) |
-| + getNumer(): int    |
-| + getPojemnosc():int |
-+----------------------+
- 
- 
-              ▲
-              |
-              | dziedziczenie
-              |
-+-------------------------------+
-|          Rezerwacja           |
-+-------------------------------+
-| # nazwa: string               |
-| # pokoj: int                  |
-| # data: string                |
-| # znizka: double              |
-+-------------------------------+
-| + Rezerwacja(n,p,d)           |
-| + typRezerwacji(): string     |
-| + getPokoj(): int             |
-| + getData(): string           |
-| + getNazwa(): string          |
-| + dodajZnizke(z:double): void |
-| + pokaz(): void               |
-+-------------------------------+
-       ▲               ▲
-       |               |
-+-------------+   +-------------+
-|   Rodzina   |   |    Grupa    |
-+-------------+   +-------------+
-| + typRezerwacji(): string     |
-+-------------+   +-------------+
- 
- 
++---------------------------+
+|           Room            |
++---------------------------+
+| - id: int                 |
+| - number: int             |
+| - capacity: int           |
+| - pricePerNight: double   |
+| - type: string            |
++---------------------------+
+| + Room(n:int,c:int,p:double,t:string) |
+| + getId(): int            |
+| + getNumber(): int        |
+| + getCapacity(): int      |
+| + getPrice(): double      |
+| + getType(): string       |
+| + show(): void            |
++---------------------------+
+
+
 +----------------------------------+
-|              Hotel               |
+|           Reservation            |
 +----------------------------------+
-| - rezerwacje: vector<Rezerwacja*>|
-| - pokoje: vector<Pokoj>          |
+| - id: int                        |
+| - name: string                   |
+| - room_id: int                   |
+| - dateFrom: string               |
+| - dateTo: string                 |
+| - discount: double               |
 +----------------------------------+
-| + Hotel()                        |
-| + czyDostepny(int,string): bool  |
-| + sprawdzDostepnosc(): void      |
-| + dodajRezerwacje(): void        |
-| + odmowRezerwacje(): void        |
-| + dodajZnizke(): void            |
-| + pokazRezerwacje(): void        |
+| + Reservation(n,r,d1,d2)         |
+| + getRoomId(): int               |
+| + getName(): string              |
+| + getDateFrom(): string          |
+| + getDateTo(): string            |
+| + addDiscount(d:double): void    |
+| + reservationType(): string      |
+| + show(): void                   |
 +----------------------------------+
+        ▲                 ▲
+        |                 |
++----------------+  +----------------+
+|     Family     |  |      Group     |
++----------------+  +----------------+
+| - children: int|  | - people: int  |
++----------------+  +----------------+
+| + reservationType(): string       |
++----------------+  +----------------+
+
+
++--------------------------------------+
+|               Hotel                  |
++--------------------------------------+
+| - reservations: vector<Reservation*> |
+| - rooms: vector<Room>                |
++--------------------------------------+
+| + Hotel()                            |
+| + isAvailable(int,string,string):bool|
+| + addReservation(): void             |
+| + rejectReservation(): void          |
+| + addDiscount(): void                |
+| + showReservations(): void           |
+| + showRooms(): void                  |
++--------------------------------------+
