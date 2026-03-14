@@ -1,6 +1,8 @@
 # G6_Hotel
 
-*Składanie rezerwacji (dodanie rezerwacji dla rodzin, grup)
-*Odmowa rezerwacji
-*Dodanie żniżek
-*Sprawdzenie dostępności terminów pokoi
+<ul>
+<li>Składanie rezerwacji (dodanie rezerwacji dla rodzin, grup)</li>
+<li>Odmowa rezerwacji</li>
+<li>Dodanie żniżek</li>
+<li>Sprawdzenie dostępności terminów pokoi</li>
+</ul>
