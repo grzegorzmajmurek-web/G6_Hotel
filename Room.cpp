@@ -12,34 +12,29 @@ private:
 public:
 	Room(int n, int c, int t, bool s)
 		: number(n), capacity(c), type(t), status(s) {
-		cout << n << " " << c << " " << t << " " << s << endl;
 	}
 	//gettery
 	int getNumber() {
-		return n;
+		return number;
 
 	}
 
 	int getCapacity() {
-		return c;
+		return capacity;
 
 	}
 	int getType() {
-		return t;
+		return type;
 
 	}
 	int getStatus() {
-		return s;
+		return status;
 
 	}
 	//settery
-	int setStatus(bool status) {
-		s = status;
-		return s;
+	int setStatus(bool s) {
+		status = s;
+		return status;
 	}
 
 };
-int main() {
-	Room(1, 10, 1, true);
-	return 0;
-}
