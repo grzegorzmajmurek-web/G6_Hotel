@@ -1,129 +1,141 @@
-#pragma once
-#include <vector>
-#include <map>
-#include <string>
-#include <iostream>
-
-#include "Reservation.h"
+// Hotel.cpp : Punkt wejscia programu konsolowego - rezerwacje hotelowe.
+ 
+#include "Hotel.h"
 #include "Room.h"
-#include "Amenity.h"
-#include "MealPlan.h"
-
-class Hotel {
-private:
-    std::vector<Reservation*> reservations;
-    std::vector<Room> rooms;
-    std::vector<Amenity> amenities;
-    std::map<MealPlan, double> pricelist;
-
-public:
-    // Konstruktor
-    Hotel() = default;
-
-    // Sprawdza dostępność pokoju w danym dniu
-    bool isAvailable(int room, const std::string& date) {
-        for (auto* r : reservations) {
-            if (r->getRoomNumber() == room && r->getDate() == date)
-                return false;
-        }
-        return true;
+#include "Service.h"
+#include "Date.h"
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <string>
+ 
+namespace
+{
+    void PrintMenu()
+    {
+        std::cout << "\n===== MENU =====\n"
+<< "1. Lista pokoi\n"
+<< "2. Nowa rezerwacja\n"
+<< "3. Dodaj usluge do rezerwacji\n"
+<< "4. Lista rezerwacji\n"
+<< "5. Kalendarz pokoju (miesiac)\n"
+<< "0. Wyjscie\n"
+<< "Wybor: ";
     }
-
-    // Wypisuje dostępność wszystkich pokoi
-    void checkAvailability() {
-        std::cout << "Checking availability...\n";
-        for (const auto& room : rooms) {
-            std::cout << "Room " << room.getNumber()
-                << " is available.\n";
-        }
-    }
-
-    // Dodaje rezerwację
-    void addReservation(Reservation* r) {
-        reservations.push_back(r);
-        std::cout << "Reservation added.\n";
-    }
-
-    // Odrzuca rezerwację
-    void refuseReservation(const std::string& reason) {
-        std::cout << "Reservation refused: " << reason << "\n";
-    }
-
-    // Dodaje zniżkę do rezerwacji
-    void addDiscount(int resId, double d) {
-        for (auto* r : reservations) {
-            if (r->getId() == resId) {
-                r->applyDiscount(d);
-                std::cout << "Discount applied.\n";
-                return;
-            }
-        }
-        std::cout << "Reservation not found.\n";
-    }
-
-    // Wyświetla wszystkie rezerwacje
-    void showReservations() {
-        std::cout << "Reservations:\n";
-        for (auto* r : reservations) {
-            r->print();
+ 
+    Date ReadDate(const std::string& prompt)
+    {
+        while (true)
+        {
+            std::cout << prompt;
+            std::string s;
+            std::cin >> s;
+            try { return Date::Parse(s); }
+            catch (const std::exception& ex) { std::cout << ex.what() << "\n"; }
         }
     }
-
-    // Check-in
-    void checkIn(int resId) {
-        for (auto* r : reservations) {
-            if (r->getId() == resId) {
-                r->checkIn();
-                std::cout << "Checked in.\n";
-                return;
-            }
+ 
+    int ReadInt(const std::string& prompt)
+    {
+        while (true)
+        {
+            std::cout << prompt;
+            int x;
+            if (std::cin >> x) return x;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Podaj liczbe.\n";
         }
-        std::cout << "Reservation not found.\n";
     }
-
-    // Check-out
-    void checkOut(int resId) {
-        for (auto* r : reservations) {
-            if (r->getId() == resId) {
-                r->checkOut();
-                std::cout << "Checked out.\n";
-                return;
-            }
+ 
+    void SeedRooms(Hotel & hotel)
+    {
+        hotel.AddRoom(std::make_shared<StandardRoom>(101));
+        hotel.AddRoom(std::make_shared<StandardRoom>(102));
+        hotel.AddRoom(std::make_shared<DeluxeRoom>(201));
+        hotel.AddRoom(std::make_shared<DeluxeRoom>(202));
+        hotel.AddRoom(std::make_shared<Suite>(301));
+    }
+ 
+    void AddServiceFlow(Hotel& hotel)
+    {
+        int resId = ReadInt("ID rezerwacji: ");
+        std::cout << "Typ uslugi: 1) SPA  2) Posilki : ";
+        int t; std::cin >> t;
+        std::unique_ptr<Service> svc;
+        if (t == 1)
+        {
+            int sessions = ReadInt("Liczba sesji SPA: ");
+            svc.reset(new SpaService(sessions));
         }
-        std::cout << "Reservation not found.\n";
-    }
-
-    // Dodaje udogodnienie
-    void addAmenity(const Amenity& a) {
-        amenities.push_back(a);
-    }
-
-    // Oblicza całkowitą cenę rezerwacji
-    double calculateTotalPrice(int resId) {
-        for (auto* r : reservations) {
-            if (r->getId() == resId) {
-                double base = r->getBasePrice();
-                double meal = pricelist[r->getMealPlan()];
-                return base + meal;
-            }
+        else if (t == 2)
+        {
+            std::cout << "Plan: 1) Sniadania  2) HB  3) FB : ";
+            int p; std::cin >> p;
+            MealService::Plan plan = MealService::Plan::Breakfast;
+            if (p == 2) plan = MealService::Plan::HalfBoard;
+            else if (p == 3) plan = MealService::Plan::FullBoard;
+            svc.reset(new MealService(plan));
         }
-        return 0.0;
+        else { std::cout << "Nieznany typ.\n"; return; }
+ 
+        if (hotel.AddServiceToReservation(resId, std::move(svc)))
+            std::cout << "Dodano usluge.\n";
+        else
+            std::cout << "Nie znaleziono rezerwacji.\n";
     }
-
-    // Generuje raport
-    void generateReport() {
-        std::cout << "Hotel Report:\n";
-        std::cout << "Reservations: " << reservations.size() << "\n";
-        std::cout << "Rooms: " << rooms.size() << "\n";
-        std::cout << "Amenities: " << amenities.size() << "\n";
+ 
+    void NewReservationFlow(Hotel& hotel)
+    {
+        int roomNo = ReadInt("Numer pokoju: ");
+        std::cout << "Imie i nazwisko gosc: ";
+        std::string name;
+        std::cin >> std::ws;
+        std::getline(std::cin, name);
+        int guests = ReadInt("Liczba gosci: ");
+        Date from = ReadDate("Data przyjazdu (YYYY-MM-DD): ");
+        Date to   = ReadDate("Data wyjazdu  (YYYY-MM-DD): ");
+ 
+        int id = hotel.CreateReservation(roomNo, name, guests, from, to);
+        if (id > 0) std::cout << "Utworzono rezerwacje o ID " << id << ".\n";
     }
-
-    // Wyszukuje rezerwację po nazwisku
-    Reservation* findReservation(const std::string& n) {
-        for (auto* r : reservations) {
-            if (r->getName() == n)
-                return r;
+ 
+    void CalendarFlow(const Hotel& hotel)
+    {
+        int roomNo = ReadInt("Numer pokoju: ");
+        int year   = ReadInt("Rok: ");
+        int month  = ReadInt("Miesiac (1-12): ");
+        hotel.PrintCalendarForRoom(roomNo, year, month);
+    }
+}
+ 
+int main()
+{
+    Hotel hotel("Pod Gwiazdami");
+    SeedRooms(hotel);
+ 
+    std::cout << "Witaj w systemie rezerwacji hotelu \"Pod Gwiazdami\".\n";
+ 
+    while (true)
+    {
+        PrintMenu();
+        int choice;
+        if (!(std::cin >> choice))
+        {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            continue;
         }
-        return nullptr;
+ 
+        switch (choice)
+        {
+            case 1: hotel.PrintRooms(); break;
+            case 2: NewReservationFlow(hotel); break;
+            case 3: AddServiceFlow(hotel); break;
+            case 4: hotel.PrintReservations(); break;
+            case 5: CalendarFlow(hotel); break;
+            case 0: std::cout << "Do widzenia.\n"; return 0;
+            default: std::cout << "Nieznana opcja.\n"; break;
+        }
     }
-};
+}
