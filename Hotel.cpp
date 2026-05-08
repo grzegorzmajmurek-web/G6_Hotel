@@ -8,11 +8,16 @@
 #include <limits>
 #include <memory>
 #include <string>
- 
+#include <mysql_driver.h>
+#include <mysql_connection.h>
+#include <cppconn/prepared_statement.h>
+#include <cppconn/statement.h>
+#include <cppconn/resultset.h>
 namespace
 {
     void PrintMenu()
     {
+        
         std::cout << "\n===== MENU =====\n"
 << "1. Lista pokoi\n"
 << "2. Nowa rezerwacja\n"
@@ -98,6 +103,31 @@ namespace
  
         int id = hotel.CreateReservation(roomNo, name, guests, from, to);
         if (id > 0) std::cout << "Utworzono rezerwacje o ID " << id << ".\n";
+        try {
+            sql::mysql::MySQL_Driver* driver = sql::mysql::get_mysql_driver_instance();
+            std::unique_ptr<sql::Connection> con(driver->connect(
+                "tcp://localhost:3306",
+                "root",
+                ""
+            ));
+            // Ustawiamy istniejące schema 'hotel' zamiast tworzenia nowej bazy
+            con->setSchema("hotel");
+
+            std::unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement(
+                "INSERT INTO rezerwacje(klient_id, room_id, visiting_start, visiting_end, reservation_price, room_number) VALUES(?, ?, ?, ?, ?, ?)"
+            ));
+
+            pstmt->setInt(1, id);
+            pstmt->setInt(2, 0);
+            pstmt->setString(3, from.ToString());
+            pstmt->setString(4, to.ToString());
+            pstmt->setDouble(5, 0.0);
+            pstmt->setInt(6, roomNo);
+            pstmt->execute();
+        }
+        catch (sql::SQLException& e) {
+            std::cout << "Blad: " << e.what() << std::endl;
+        }
     }
  
     void CalendarFlow(const Hotel& hotel)
@@ -111,6 +141,7 @@ namespace
  
 int main()
 {
+    setlocale(LC_ALL, "pl_PL");
     Hotel hotel("Pod Gwiazdami");
     SeedRooms(hotel);
  
