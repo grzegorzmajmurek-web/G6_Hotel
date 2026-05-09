@@ -4,10 +4,12 @@
 #include "Room.h"
 #include "Service.h"
 #include "Date.h"
+#include "PromoCodeService.h"
 #include <iostream>
 #include <limits>
 #include <memory>
 #include <string>
+#include <cctype>
  
 namespace
 {
@@ -20,6 +22,8 @@ namespace
 << "4. Lista rezerwacji\n"
 << "5. Kalendarz pokoju (miesiac)\n"
 << "6. Anuluj rezerwacje\n"
+<< "7. Zastosuj kod rabatowy\n"
+<< "8. Usun kod rabatowy\n"
 << "0. Wyjscie\n"
 << "Wybor: ";
     }
@@ -222,6 +226,99 @@ namespace
         else
             std::cout << "Nie znaleziono rezerwacji o podanym ID.\n";
     }
+
+    void ApplyPromoCodeFlow(Hotel& hotel)
+    {
+        if (!hotel.HasReservations())
+        {
+            std::cout << "Brak rezerwacji w systemie.\n";
+            return;
+        }
+
+        int resId = ReadInt("ID rezerwacji: ", 1);
+        auto* res = hotel.FindReservation(resId);
+        if (!res)
+        {
+            std::cout << "Nie znaleziono rezerwacji o podanym ID.\n";
+            return;
+        }
+
+        if (hotel.IsPromoCodeApplied(resId))
+        {
+            std::cout << "Blad: Do tej rezerwacji zostal juz przypisany kod rabatowy. Mozna uzyc tylko jednego.\n";
+            return;
+        }
+
+        std::cout << "Dostepne kody: RODZINA (-10%), LATO (-50 PLN), DLUGIPOBYT (do -20%)\n";
+        std::cout << "Podaj kod rabatowy: ";
+        std::string code;
+        std::cin >> std::ws;
+        std::getline(std::cin, code);
+
+        for (auto & c : code) c = toupper(c); // Zamiana na wielkie litery
+
+        double discountAmount = 0.0;
+        if (code == "RODZINA")
+        {
+            if (hotel.GetReservationGuests(resId) < 3)
+            {
+                std::cout << "Blad: Kod RODZINA jest dostepny tylko dla rezerwacji rodzinnych (minimum 3 osoby).\n";
+                return;
+            }
+            discountAmount = res->CalculateTotal() * 0.10;
+        }
+        else if (code == "LATO")
+        {
+            discountAmount = 50.0;
+        }
+        else if (code == "DLUGIPOBYT")
+        {
+            int n = res->Nights();
+            if (n >= 14) discountAmount = res->CalculateTotal() * 0.20; // 20% za 14+ dni
+            else if (n >= 7) discountAmount = res->CalculateTotal() * 0.10; // 10% za 7+ dni
+            else if (n >= 3) discountAmount = res->CalculateTotal() * 0.05; // 5% za 3+ dni
+            else
+            {
+                std::cout << "Blad: Kod DLUGIPOBYT jest wazny tylko dla pobytow na minimum 3 noce.\n";
+                return;
+            }
+        }
+        else
+        {
+            std::cout << "Nieznany lub niewazny kod rabatowy.\n";
+            return;
+        }
+
+        // Zapobiegamy zejściu ceny całej rezerwacji poniżej zera
+        if (res->CalculateTotal() - discountAmount < 0) discountAmount = res->CalculateTotal(); 
+
+        hotel.AddServiceToReservation(resId, std::unique_ptr<Service>(new PromoCodeService(code, discountAmount)));
+        hotel.SetPromoCodeApplied(resId);
+        std::cout << "Zastosowano kod rabatowy! Odliczono " << discountAmount << " PLN od obecnej kwoty.\n";
+    }
+
+    void RemovePromoCodeFlow(Hotel& hotel)
+    {
+        if (!hotel.HasReservations())
+        {
+            std::cout << "Brak rezerwacji w systemie.\n";
+            return;
+        }
+
+        int resId = ReadInt("ID rezerwacji: ", 1);
+        auto* res = hotel.FindReservation(resId);
+        if (!res)
+        {
+            std::cout << "Nie znaleziono rezerwacji o podanym ID.\n";
+            return;
+        }
+
+        if (!hotel.IsPromoCodeApplied(resId)) { std::cout << "Ta rezerwacja nie ma przypisanego kodu rabatowego.\n"; return; }
+
+        res->RemovePromoCodes();
+        hotel.ClearPromoCodeApplied(resId);
+        std::cout << "Kod rabatowy zostal pomyslnie usuniety! Mozesz teraz dodac nowy w menu (Opcja 7).\n";
+    }
 }
  
 int main()
@@ -254,6 +351,8 @@ int main()
             case 4: hotel.PrintReservations(); break;
             case 5: CalendarFlow(hotel); break;
             case 6: CancelReservationFlow(hotel); break;
+            case 7: ApplyPromoCodeFlow(hotel); break;
+            case 8: RemovePromoCodeFlow(hotel); break;
             case 0: std::cout << "Do widzenia.\n"; return 0;
             default: std::cout << "Nieznana opcja.\n"; break;
         }

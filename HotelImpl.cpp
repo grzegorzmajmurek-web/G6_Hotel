@@ -32,6 +32,8 @@ bool Hotel::CancelReservation(int id)
     if (it != m_reservations.end())
     {
         m_reservations.erase(it);
+        m_resGuests.erase(id);
+        m_promoApplied.erase(id);
         return true;
     }
     return false;
@@ -42,6 +44,27 @@ bool Hotel::HasReservations() const
     return !m_reservations.empty();
 }
  
+int Hotel::GetReservationGuests(int id) const
+{
+    auto it = m_resGuests.find(id);
+    return it != m_resGuests.end() ? it->second : 0;
+}
+
+bool Hotel::IsPromoCodeApplied(int id) const
+{
+    return m_promoApplied.find(id) != m_promoApplied.end();
+}
+
+void Hotel::SetPromoCodeApplied(int id)
+{
+    m_promoApplied.insert(id);
+}
+
+void Hotel::ClearPromoCodeApplied(int id)
+{
+    m_promoApplied.erase(id);
+}
+
 bool Hotel::IsRoomAvailable(int roomNumber, const Date& from, const Date& to) const
 {
     for (const auto& r : m_reservations)
@@ -74,7 +97,9 @@ int Hotel::CreateReservation(int roomNumber,
     {
         auto res = std::unique_ptr<Reservation>(
             new Reservation(m_nextReservationId++, room, guestName, guests, from, to));
+        
         int id = res->GetId();
+        m_resGuests[id] = guests;
         m_reservations.push_back(std::move(res));
         return id;
     }
