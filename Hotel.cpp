@@ -92,17 +92,6 @@ namespace
  
     void NewReservationFlow(Hotel& hotel)
     {
-        int roomNo = ReadInt("Numer pokoju: ");
-        std::cout << "Imie i nazwisko gosc: ";
-        std::string name;
-        std::cin >> std::ws;
-        std::getline(std::cin, name);
-        int guests = ReadInt("Liczba gosci: ");
-        Date from = ReadDate("Data przyjazdu (YYYY-MM-DD): ");
-        Date to   = ReadDate("Data wyjazdu  (YYYY-MM-DD): ");
- 
-        int id = hotel.CreateReservation(roomNo, name, guests, from, to);
-        if (id > 0) std::cout << "Utworzono rezerwacje o ID " << id << ".\n";
         try {
             sql::mysql::MySQL_Driver* driver = sql::mysql::get_mysql_driver_instance();
             std::unique_ptr<sql::Connection> con(driver->connect(
@@ -112,18 +101,53 @@ namespace
             ));
             // Ustawiamy istniejące schema 'hotel' zamiast tworzenia nowej bazy
             con->setSchema("hotel");
+        //int roomNo = ReadInt("Numer pokoju: ");
+        //std::cout << "Imie i nazwisko gosc: ";
+        //std::string name;
+        //std::cin >> std::ws;
+        //std::getline(std::cin, name);
+        //int guests = ReadInt("Liczba gosci: ");
+        //Date from = ReadDate("Data przyjazdu (YYYY-MM-DD): ");
+        //Date to   = ReadDate("Data wyjazdu  (YYYY-MM-DD): ");
+ // TEST
+        int id = hotel.CreateReservation(101, "TEST TEST", 2, Date().Parse("2026-06-20"), Date().Parse("2026-07-20"));
+        //int id = hotel.CreateReservation(roomNo, name, guests, from, to);
+        std::unique_ptr<sql::Statement> id_stmt(con->createStatement());
 
+        std::unique_ptr<sql::ResultSet> res(
+            id_stmt->executeQuery(
+                "SELECT id FROM rezerwacje ORDER BY id DESC LIMIT 1"
+            )
+        );
+
+        int last_id = 0;
+
+        if (res->next()) {
+            last_id = res->getInt("id");
+        }
+
+        if (id > 0 && last_id < 1)
+            std::cout << "Utworzono rezerwacje o ID " << id << ".\n";
+        else
+            std::cout << "Utworzono rezerwacje o ID " << last_id+1 << ".\n";
+        
             std::unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement(
+                "INSERT INTO klienci(name, lastname) VALUES(?, ?)"
+            ));
+			pstmt->setString(1, "TEST");
+			pstmt->setString(2, "TEST");
+			pstmt->execute();
+            std::unique_ptr<sql::PreparedStatement> pstmt2(con->prepareStatement(
                 "INSERT INTO rezerwacje(klient_id, room_id, visiting_start, visiting_end, reservation_price, room_number) VALUES(?, ?, ?, ?, ?, ?)"
             ));
 
-            pstmt->setInt(1, id);
-            pstmt->setInt(2, 0);
-            pstmt->setString(3, from.ToString());
-            pstmt->setString(4, to.ToString());
-            pstmt->setDouble(5, 0.0);
-            pstmt->setInt(6, roomNo);
-            pstmt->execute();
+            pstmt2->setInt(1, id);
+            pstmt2->setInt(2, 1);
+            pstmt2->setString(3, Date().Parse("2026-06-20").ToString());
+            pstmt2->setString(4, Date().Parse("2026-07-20").ToString());
+            pstmt2->setDouble(5, 0.0);
+            pstmt2->setInt(6, 301);
+            pstmt2->execute();
         }
         catch (sql::SQLException& e) {
             std::cout << "Blad: " << e.what() << std::endl;

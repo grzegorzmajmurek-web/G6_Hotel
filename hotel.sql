@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Maj 08, 2026 at 04:52 PM
+-- Generation Time: Maj 09, 2026 at 10:08 AM
 -- Wersja serwera: 10.4.28-MariaDB
 -- Wersja PHP: 8.2.4
 
@@ -33,6 +33,30 @@ CREATE TABLE `klienci` (
   `lastname` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `klienci`
+--
+
+INSERT INTO `klienci` (`id`, `name`, `lastname`) VALUES
+(1, 'TEST', 'TEST'),
+(2, 'TEST', 'TEST'),
+(3, 'TEST', 'TEST'),
+(4, 'TEST', 'TEST'),
+(5, 'TEST', 'TEST'),
+(6, 'TEST', 'TEST'),
+(7, 'TEST', 'TEST'),
+(8, 'TEST', 'TEST'),
+(9, 'TEST', 'TEST'),
+(10, 'TEST', 'TEST'),
+(11, 'TEST', 'TEST'),
+(12, 'TEST', 'TEST'),
+(13, 'TEST', 'TEST'),
+(14, 'TEST', 'TEST'),
+(15, 'TEST', 'TEST'),
+(16, 'TEST', 'TEST'),
+(17, 'TEST', 'TEST'),
+(18, 'TEST', 'TEST');
+
 -- --------------------------------------------------------
 
 --
@@ -42,10 +66,21 @@ CREATE TABLE `klienci` (
 CREATE TABLE `pokoje` (
   `id` int(255) NOT NULL,
   `room_number` int(255) DEFAULT NULL,
-  `capacity` int(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
+  `capacity` int(255) DEFAULT NULL,
   `price` int(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `pokoje`
+--
+
+INSERT INTO `pokoje` (`id`, `room_number`, `type`, `capacity`, `price`) VALUES
+(1, 101, 'Standard', 2, 200),
+(2, 102, 'Standard', 2, 200),
+(3, 201, 'Deluxe', 3, 350),
+(4, 202, 'Deluxe', 3, 350),
+(5, 301, 'Suite', 4, 600);
 
 -- --------------------------------------------------------
 
@@ -62,6 +97,13 @@ CREATE TABLE `rezerwacje` (
   `visiting_start` date DEFAULT NULL,
   `visiting_end` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `rezerwacje`
+--
+
+INSERT INTO `rezerwacje` (`id`, `klient_id`, `room_id`, `room_number`, `reservation_price`, `visiting_start`, `visiting_end`) VALUES
+(1, 1, 1, 301, 0, '2026-06-20', '2026-07-20');
 
 --
 -- Indeksy dla zrzutów tabel
@@ -95,19 +137,19 @@ ALTER TABLE `rezerwacje`
 -- AUTO_INCREMENT for table `klienci`
 --
 ALTER TABLE `klienci`
-  MODIFY `id` int(255) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `pokoje`
 --
 ALTER TABLE `pokoje`
-  MODIFY `id` int(255) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `rezerwacje`
 --
 ALTER TABLE `rezerwacje`
-  MODIFY `id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables
