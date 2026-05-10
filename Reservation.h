@@ -25,6 +25,7 @@ public:
     int GetGuests() const { return m_guests; }
  
     void AddService(std::unique_ptr<Service> service);
+    void RemovePromoCodes();
  
     int Nights() const;
     double CalculateRoomCost() const;    // z cennikiem sezonowym per doba
