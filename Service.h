@@ -38,3 +38,17 @@ private:
     Plan m_plan;
     double PricePerPersonPerNight() const;
 };
+
+class PoolService : public Service
+{
+public:
+    PoolService(int days, bool sunbed, bool towel) : m_days(days), m_sunbed(sunbed), m_towel(towel) {}
+    std::string GetName() const override;
+    double GetCost(int nights, int guests) const override;
+    std::unique_ptr<Service> Clone() const override;
+
+private:
+    int m_days;
+    bool m_sunbed;
+    bool m_towel;
+};

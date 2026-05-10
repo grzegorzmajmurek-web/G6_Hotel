@@ -115,8 +115,8 @@ namespace
             return;
         }
 
-        std::cout << "Typ uslugi: 1) SPA  2) Posilki : ";
-        int t = ReadInt("", 1, 2);
+        std::cout << "Typ uslugi: 1) SPA  2) Posilki  3) Basen : ";
+        int t = ReadInt("", 1, 3);
         std::unique_ptr<Service> svc;
         if (t == 1)
         {
@@ -131,6 +131,13 @@ namespace
             if (p == 2) plan = MealService::Plan::HalfBoard;
             else if (p == 3) plan = MealService::Plan::FullBoard;
             svc.reset(new MealService(plan));
+        }
+        else if (t == 3)
+        {
+            int days = ReadInt("Liczba dni korzystania z basenu: ", 1);
+            int s = ReadInt("Czy wypozyczyc lezak (20 PLN/dzien)? 1-Tak, 0-Nie : ", 0, 1);
+            int w = ReadInt("Czy wypozyczyc recznik (10 PLN/dzien)? 1-Tak, 0-Nie : ", 0, 1);
+            svc.reset(new PoolService(days, s == 1, w == 1));
         }
         else { std::cout << "Nieznany typ.\n"; return; }
  
@@ -243,7 +250,7 @@ namespace
             return;
         }
 
-        if (hotel.IsPromoCodeApplied(resId))
+        if (res->HasPromoCode())
         {
             std::cout << "Blad: Do tej rezerwacji zostal juz przypisany kod rabatowy. Mozna uzyc tylko jednego.\n";
             return;
@@ -260,7 +267,7 @@ namespace
         double discountAmount = 0.0;
         if (code == "RODZINA")
         {
-            if (hotel.GetReservationGuests(resId) < 3)
+            if (res->GetGuests() < 3)
             {
                 std::cout << "Blad: Kod RODZINA jest dostepny tylko dla rezerwacji rodzinnych (minimum 3 osoby).\n";
                 return;
@@ -293,7 +300,7 @@ namespace
         if (res->CalculateTotal() - discountAmount < 0) discountAmount = res->CalculateTotal(); 
 
         hotel.AddServiceToReservation(resId, std::unique_ptr<Service>(new PromoCodeService(code, discountAmount)));
-        hotel.SetPromoCodeApplied(resId);
+        res->SetPromoCodeApplied(true);
         std::cout << "Zastosowano kod rabatowy! Odliczono " << discountAmount << " PLN od obecnej kwoty.\n";
     }
 
@@ -313,10 +320,9 @@ namespace
             return;
         }
 
-        if (!hotel.IsPromoCodeApplied(resId)) { std::cout << "Ta rezerwacja nie ma przypisanego kodu rabatowego.\n"; return; }
+        if (!res->HasPromoCode()) { std::cout << "Ta rezerwacja nie ma przypisanego kodu rabatowego.\n"; return; }
 
         res->RemovePromoCodes();
-        hotel.ClearPromoCodeApplied(resId);
         std::cout << "Kod rabatowy zostal pomyslnie usuniety! Mozesz teraz dodac nowy w menu (Opcja 7).\n";
     }
 }

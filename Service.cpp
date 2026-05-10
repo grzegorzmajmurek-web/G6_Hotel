@@ -60,3 +60,30 @@ std::unique_ptr<Service> MealService::Clone() const
 {
     return std::unique_ptr<Service>(new MealService(*this));
 }
+
+std::string PoolService::GetName() const
+{
+    std::string name = "Basen (" + std::to_string(m_days) + " dni)";
+    if (m_sunbed || m_towel) {
+        name += " + dodatki (";
+        if (m_sunbed) name += "lezak";
+        if (m_sunbed && m_towel) name += ", ";
+        if (m_towel) name += "recznik";
+        name += ")";
+    }
+    return name;
+}
+
+double PoolService::GetCost(int /*nights*/, int guests) const
+{
+    double dailyCostPerGuest = 0.0;
+    if (m_sunbed) dailyCostPerGuest += 20.0; // Cena lezaka za dzien na osobe
+    if (m_towel) dailyCostPerGuest += 10.0;  // Cena recznika za dzien na osobe
+    // Samo wejscie na basen wliczone w pobyt, platne tylko udogodnienia
+    return dailyCostPerGuest * m_days * guests;
+}
+
+std::unique_ptr<Service> PoolService::Clone() const
+{
+    return std::unique_ptr<Service>(new PoolService(*this));
+}

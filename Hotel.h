@@ -30,11 +30,6 @@ public:
  
     bool HasReservations() const;
  
-    int GetReservationGuests(int id) const;
-    bool IsPromoCodeApplied(int id) const;
-    void SetPromoCodeApplied(int id);
-    void ClearPromoCodeApplied(int id);
-
     void PrintRooms() const;
     void PrintReservations() const;
     void PrintCalendarForRoom(int roomNumber, int year, int month) const;
@@ -47,6 +42,4 @@ private:
     std::vector<std::shared_ptr<Room>> m_rooms;
     std::vector<std::unique_ptr<Reservation>> m_reservations;
     int m_nextReservationId = 1;
-    std::map<int, int> m_resGuests;
-    std::set<int> m_promoApplied;
 };

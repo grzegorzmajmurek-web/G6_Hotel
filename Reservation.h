@@ -24,6 +24,9 @@ public:
     const std::string& GetGuestName() const { return m_guestName; }
     int GetGuests() const { return m_guests; }
  
+    bool HasPromoCode() const { return m_promoApplied; }
+    void SetPromoCodeApplied(bool applied) { m_promoApplied = applied; }
+
     void AddService(std::unique_ptr<Service> service);
     void RemovePromoCodes();
  
@@ -42,4 +45,5 @@ private:
     Date m_checkIn;
     Date m_checkOut;
     std::vector<std::unique_ptr<Service>> m_services;
+    bool m_promoApplied = false;
 };

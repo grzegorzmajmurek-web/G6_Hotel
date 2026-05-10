@@ -38,6 +38,7 @@ void Reservation::RemovePromoCodes()
                        }),
         m_services.end()
     );
+    m_promoApplied = false;
 }
  
 int Reservation::Nights() const
