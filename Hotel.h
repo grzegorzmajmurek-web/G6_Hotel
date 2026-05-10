@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <map>
+#include <set>
  
 class Hotel
 {
@@ -22,7 +24,11 @@ public:
                           const Date& from,
                           const Date& to);
  
+    bool CancelReservation(int id);
+
     bool AddServiceToReservation(int reservationId, std::unique_ptr<Service> service);
+ 
+    bool HasReservations() const;
  
     void PrintRooms() const;
     void PrintReservations() const;
