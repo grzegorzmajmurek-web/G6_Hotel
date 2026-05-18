@@ -8,6 +8,10 @@ Hotel::Hotel(std::string name) : m_name(std::move(name)) {}
  
 void Hotel::AddRoom(std::shared_ptr<Room> room)
 {
+    if (!room)
+        throw std::invalid_argument("Nie mozna dodac pustego pokoju");
+    if (FindRoom(room->GetNumber()))
+        throw std::invalid_argument("Pokoj o numerze " + std::to_string(room->GetNumber()) + " juz istnieje");
     m_rooms.push_back(std::move(room));
 }
  
@@ -53,12 +57,28 @@ bool Hotel::IsRoomAvailable(int roomNumber, const Date& from, const Date& to) co
     return true;
 }
  
+static bool IsValidGuestName(const std::string& name)
+{
+    if (name.empty()) return false;
+    return name.find_first_not_of(" \t\n\r") != std::string::npos;
+}
+
 int Hotel::CreateReservation(int roomNumber,
                              const std::string& guestName,
                              int guests,
                              const Date& from,
                              const Date& to)
 {
+    if (!IsValidGuestName(guestName))
+    {
+        std::cout << "Blad: Imie i nazwisko goscia nie moze byc puste.\n";
+        return -1;
+    }
+    if (!(from < to))
+    {
+        std::cout << "Blad: Data wyjazdu musi byc pozniejsza niz data przyjazdu.\n";
+        return -1;
+    }
     auto room = FindRoom(roomNumber);
     if (!room)
     {

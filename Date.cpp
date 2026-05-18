@@ -18,7 +18,7 @@ static int DaysInMonth(int y, int m)
  
 bool Date::IsValid() const
 {
-    if (year < 1970 || month < 1 || month > 12) return false;
+    if (year < 1970 || year > 2999 || month < 1 || month > 12) return false;
     return day >= 1 && day <= DaysInMonth(year, month);
 }
  
@@ -33,6 +33,10 @@ long Date::ToSerial() const
  
 Date Date::FromSerial(long serial)
 {
+    if (serial < 0)
+        throw std::invalid_argument("Numer seryjny daty nie moze byc ujemny");
+    if (serial > 365000L)
+        throw std::invalid_argument("Numer seryjny daty przekracza maksymalna wartosc");
     Date d{ 1970, 1, 1 };
     while (true)
     {
@@ -54,11 +58,14 @@ bool Date::operator==(const Date& other) const { return ToSerial() == other.ToSe
  
 Date Date::Parse(const std::string& s)
 {
+    if (s.length() != 10 || s[4] != '-' || s[7] != '-')
+        throw std::invalid_argument("Nieprawidlowa data (oczekiwano YYYY-MM-DD): " + s);
     Date d{};
     char dash1 = 0, dash2 = 0;
     std::istringstream iss(s);
     iss >> d.year >> dash1 >> d.month >> dash2 >> d.day;
-    if (!iss || dash1 != '-' || dash2 != '-' || !d.IsValid())
+    char extra = 0;
+    if (!iss || iss.get(extra) || dash1 != '-' || dash2 != '-' || !d.IsValid())
         throw std::invalid_argument("Nieprawidlowa data (oczekiwano YYYY-MM-DD): " + s);
     return d;
 }

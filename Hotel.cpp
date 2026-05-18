@@ -53,7 +53,6 @@ namespace
             int x;
             if (std::cin >> x)
             {
-                // Czyszczenie reszty linii (np. gdy użytkownik wpisze "2abc")
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 if (x >= min && x <= max) return x;
                 std::cout << "Wartosc musi byc w przedziale [" << min << " - " << max << "].\n";
@@ -64,6 +63,28 @@ namespace
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 std::cout << "Podaj poprawna liczbe calkowita.\n";
             }
+        }
+    }
+
+    std::string ReadString(const std::string& prompt, size_t maxLen = 100)
+    {
+        while (true)
+        {
+            std::cout << prompt;
+            std::string s;
+            std::cin >> std::ws;
+            std::getline(std::cin, s);
+            // Trim trailing whitespace
+            auto last = s.find_last_not_of(" \t\n\r");
+            if (last != std::string::npos) s = s.substr(0, last + 1);
+            // Trim leading whitespace
+            auto first = s.find_first_not_of(" \t\n\r");
+            if (first != std::string::npos) s = s.substr(first);
+            else s.clear();
+
+            if (s.empty()) { std::cout << "Pole nie moze byc puste.\n"; continue; }
+            if (s.length() > maxLen) { std::cout << "Tekst zbyt dlugi (max " << maxLen << " znakow).\n"; continue; }
+            return s;
         }
     }
  
@@ -115,12 +136,17 @@ namespace
             return;
         }
 
+        auto* resPtr = hotel.FindReservation(resId);
+        int stayNights = resPtr->Nights();
+
         std::cout << "Typ uslugi: 1) SPA  2) Posilki  3) Basen : ";
         int t = ReadInt("", 1, 3);
         std::unique_ptr<Service> svc;
         if (t == 1)
         {
-            int sessions = ReadInt("Liczba sesji SPA: ", 1);
+            int maxSessions = std::min(100, stayNights * 3);
+            if (maxSessions < 1) maxSessions = 1;
+            int sessions = ReadInt("Liczba sesji SPA (1-" + std::to_string(maxSessions) + "): ", 1, maxSessions);
             svc.reset(new SpaService(sessions));
         }
         else if (t == 2)
@@ -134,7 +160,7 @@ namespace
         }
         else if (t == 3)
         {
-            int days = ReadInt("Liczba dni korzystania z basenu: ", 1);
+            int days = ReadInt("Liczba dni korzystania z basenu (1-" + std::to_string(stayNights) + "): ", 1, stayNights);
             int s = ReadInt("Czy wypozyczyc lezak (20 PLN/dzien)? 1-Tak, 0-Nie : ", 0, 1);
             int w = ReadInt("Czy wypozyczyc recznik (10 PLN/dzien)? 1-Tak, 0-Nie : ", 0, 1);
             svc.reset(new PoolService(days, s == 1, w == 1));
@@ -202,10 +228,7 @@ namespace
             return;
         }
 
-        std::cout << "Imie i nazwisko goscia: ";
-        std::string name;
-        std::cin >> std::ws;
-        std::getline(std::cin, name);
+        std::string name = ReadString("Imie i nazwisko goscia: ", 100);
  
         int id = hotel.CreateReservation(roomNo, name, guests, from, to);
         if (id > 0) std::cout << "Utworzono rezerwacje o ID " << id << ".\n";
@@ -257,12 +280,8 @@ namespace
         }
 
         std::cout << "Dostepne kody: RODZINA (-10%), LATO (-50 PLN), DLUGIPOBYT (do -20%)\n";
-        std::cout << "Podaj kod rabatowy: ";
-        std::string code;
-        std::cin >> std::ws;
-        std::getline(std::cin, code);
-
-        for (auto & c : code) c = toupper(c); // Zamiana na wielkie litery
+        std::string code = ReadString("Podaj kod rabatowy: ", 50);
+        for (auto& c : code) c = toupper(c);
 
         double discountAmount = 0.0;
         if (code == "RODZINA")

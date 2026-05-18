@@ -1,11 +1,18 @@
 #pragma once
 #include <string>
 #include <memory>
- 
+#include <stdexcept>
+
 class Room
 {
 public:
-    Room(int number, int capacity) : m_number(number), m_capacity(capacity) {}
+    Room(int number, int capacity) : m_number(number), m_capacity(capacity)
+    {
+        if (number <= 0)
+            throw std::invalid_argument("Numer pokoju musi byc liczba dodatnia");
+        if (capacity < 1 || capacity > 10)
+            throw std::invalid_argument("Pojemnosc pokoju musi byc w zakresie 1-10");
+    }
     virtual ~Room() = default;
  
     int GetNumber() const { return m_number; }

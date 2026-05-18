@@ -1,10 +1,10 @@
 #include "SeasonalPricing.h"
- 
+#include <stdexcept>
+
 Season SeasonalPricing::GetSeason(const Date& date)
 {
-    // Wysoki: czerwiec-sierpien, grudzien.
-    // Sredni: kwiecien, maj, wrzesien, pazdziernik.
-    // Niski: pozostale.
+    if (!date.IsValid())
+        throw std::invalid_argument("Nieprawidlowa data przekazana do GetSeason");
     int m = date.month;
     if (m == 6 || m == 7 || m == 8 || m == 12) return Season::High;
     if (m == 4 || m == 5 || m == 9 || m == 10) return Season::Mid;
@@ -13,6 +13,8 @@ Season SeasonalPricing::GetSeason(const Date& date)
  
 double SeasonalPricing::GetMultiplier(const Date& date)
 {
+    if (!date.IsValid())
+        throw std::invalid_argument("Nieprawidlowa data przekazana do GetMultiplier");
     switch (GetSeason(date))
     {
         case Season::High: return 1.5;

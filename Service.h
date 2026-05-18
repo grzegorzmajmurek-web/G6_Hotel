@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <memory>
+#include <stdexcept>
  
 class Service
 {
@@ -14,7 +15,11 @@ public:
 class SpaService : public Service
 {
 public:
-    explicit SpaService(int sessions) : m_sessions(sessions) {}
+    explicit SpaService(int sessions) : m_sessions(sessions)
+    {
+        if (sessions < 1 || sessions > 100)
+            throw std::invalid_argument("Liczba sesji SPA musi byc w zakresie 1-100");
+    }
     std::string GetName() const override;
     double GetCost(int nights, int guests) const override;
     std::unique_ptr<Service> Clone() const override;
@@ -42,7 +47,11 @@ private:
 class PoolService : public Service
 {
 public:
-    PoolService(int days, bool sunbed, bool towel) : m_days(days), m_sunbed(sunbed), m_towel(towel) {}
+    PoolService(int days, bool sunbed, bool towel) : m_days(days), m_sunbed(sunbed), m_towel(towel)
+    {
+        if (days < 1)
+            throw std::invalid_argument("Liczba dni korzystania z basenu musi byc co najmniej 1");
+    }
     std::string GetName() const override;
     double GetCost(int nights, int guests) const override;
     std::unique_ptr<Service> Clone() const override;

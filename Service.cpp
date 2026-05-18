@@ -9,8 +9,10 @@ std::string SpaService::GetName() const
 
  
 
-double SpaService::GetCost(int /*nights*/, int /*guests*/) const
+double SpaService::GetCost(int nights, int guests) const
 {
+    if (nights < 0) throw std::invalid_argument("Liczba nocy nie moze byc ujemna");
+    if (guests < 1) throw std::invalid_argument("Liczba gosci musi byc co najmniej 1");
     return m_sessions * PricePerSession;
 }
 
@@ -51,6 +53,8 @@ double MealService::PricePerPersonPerNight() const
 
 double MealService::GetCost(int nights, int guests) const
 {
+    if (nights < 0) throw std::invalid_argument("Liczba nocy nie moze byc ujemna");
+    if (guests < 1) throw std::invalid_argument("Liczba gosci musi byc co najmniej 1");
     return PricePerPersonPerNight() * nights * guests;
 }
 
@@ -74,8 +78,10 @@ std::string PoolService::GetName() const
     return name;
 }
 
-double PoolService::GetCost(int /*nights*/, int guests) const
+double PoolService::GetCost(int nights, int guests) const
 {
+    if (nights < 0) throw std::invalid_argument("Liczba nocy nie moze byc ujemna");
+    if (guests < 1) throw std::invalid_argument("Liczba gosci musi byc co najmniej 1");
     double dailyCostPerGuest = 0.0;
     if (m_sunbed) dailyCostPerGuest += 20.0; // Cena lezaka za dzien na osobe
     if (m_towel) dailyCostPerGuest += 10.0;  // Cena recznika za dzien na osobe
