@@ -1,0 +1,125 @@
+==========================================================================
+  DIAGRAM UML - System rezerwacji hotelowych "Pod Gwiazdami" (G6_Hotel)
+  Zgodny z aktualnym kodem zrodlowym (C++ + MySQL Connector/C++).
+==========================================================================
+
+Legenda zwiazkow:
+  --------|>   dziedziczenie (generalizacja)
+  *------      kompozycja  (wlasciciel zarzadza cyklem zycia, unique_ptr)
+  o------      agregacja   (wspoldzielenie, shared_ptr)
+  ------>      asocjacja / zaleznosc (uzywa)
+
+
++------------------------------------+        +------------------------------+
+|              Hotel                 |        |           Database           |
++------------------------------------+        +------------------------------+
+| - m_name: string                   |  ----> | - m_connection: Connection*  |
+| - m_rooms: vector<shared_ptr<Room>>|        +------------------------------+
+| - m_reservations:                  |        | + Connect(host,user,pwd,db)  |
+|     vector<unique_ptr<Reservation>>|        |     : bool                   |
+| - m_nextReservationId: int         |        | + IsConnected(): bool        |
+| - m_db: Database*                  |        | + LoadInto(h: Hotel&): void  |
++------------------------------------+        | + InsertReservation(...): int|
+| + Hotel(name: string)              |        | + DeleteReservation(id): void|
+| + AddRoom(r: shared_ptr<Room>)     |        | + InsertService(id, rec)     |
+| + IsRoomAvailable(no,from,to): bool|        | + DeletePromoServices(id)    |
+| + CreateReservation(...): int      |        | + UpdateReservation(...)     |
+| + CancelReservation(id): bool      |        | - GetRoomDbId(no): int       |
+| + AddServiceToReservation(id,svc)  |        | - InsertClient(name): int    |
+| + RemovePromoFromReservation(id)   |        +------------------------------+
+| + PrintRooms() / PrintReservations |               (MySQL / MariaDB - XAMPP)
+| + PrintCalendarForRoom(no,y,m)     |               tabele: klienci, pokoje,
+| + FindRoom(no): shared_ptr<Room>   |                       rezerwacje, uslugi
+| + FindReservation(id): Reservation*|
+| + RestoreReservation(...)          |
+| + SetDatabase(db) / SetNextResId   |
++------------------------------------+
+   |  *                     |  o
+   |  (kompozycja)          |  (agregacja katalogu pokoi)
+   v                        v
++-------------------------------------+        +-----------------------------+
+|            Reservation              |        |        SeasonalPricing      |
++-------------------------------------+        +-----------------------------+
+| - m_id: int                         | ----> | + GetSeason(d): Season      |
+| - m_room: shared_ptr<Room>          |       | + GetMultiplier(d): double  |
+| - m_guestName: string               |       | + GetSeasonName(s): const   |
+| - m_guests: int                     |       +-----------------------------+
+| - m_checkIn: Date                   |       enum Season { Low, Mid, High }
+| - m_checkOut: Date                  |
+| - m_services: vector<uniq<Service>> |
+| - m_promoApplied: bool              |
++-------------------------------------+
+| + Reservation(id,room,name,g,in,out)|
+| + GetId()/GetRoom()/GetGuests()...  |
+| + HasPromoCode(): bool              |
+| + AddService(s: unique_ptr<Service>)|
+| + RemovePromoCodes(): void          |
+| + Nights(): int                     |
+| + CalculateRoomCost(): double       |
+| + CalculateServicesCost(): double   |
+| + CalculateTotal(): double          |
+| + Print(): void                     |
++-------------------------------------+
+   | o                      | *
+   | (agregacja)            | (kompozycja uslug)
+   v                        v
++----------------------+    +-------------------------------------+
+|        Room          |    |              Service                |
+|     <<abstract>>     |    |            <<abstract>>             |
++----------------------+    +-------------------------------------+
+| # m_number: int      |    | + GetName(): string                 |
+| # m_capacity: int    |    | + GetCost(nights,guests): double    |
++----------------------+    | + Clone(): unique_ptr<Service>      |
+| + GetNumber(): int   |    | + ToRecord(): ServiceRecord         |
+| + GetCapacity(): int |    +-------------------------------------+
+| + GetBasePrice...()=0|                    ^
+| + GetType(): str = 0 |                    | dziedziczenie
+| + Describe(): string |        +-----------+-----------+-----------------+
++----------------------+        |           |           |                 |
+          ^                     v           v           v                 v
+          | dziedziczenie  +---------+ +-----------+ +-----------+ +-----------------+
+   +------+------+------+   |SpaServ. | |MealService| |PoolService| |PromoCodeService |
+   |      |      |          +---------+ +-----------+ +-----------+ +-----------------+
+   v      v      v          |-m_sess. | |-m_plan    | |-m_days    | |-m_codeName      |
++--------++--------++-----+ |         | | :Plan     | |-m_sunbed  | |-m_discountValue |
+|Standard||Deluxe  ||Suite| |         | |           | |-m_towel   | |                 |
+| Room   || Room   ||     | +---------+ +-----------+ +-----------+ +-----------------+
++--------++--------++-----+ enum Plan { Breakfast, HalfBoard, FullBoard }
+| 2 os.  || 3 os.  ||4 os.|
+| 200 PLN|| 350 PLN||600  | // MakeRoom(type, number) -> wlasciwa podklasa Room
++--------++--------++-----+ // MakeServiceFromRecord(rec) -> wlasciwa podklasa Service
+
+
++----------------------+        +------------------------------------+
+|        Date          |        |          ServiceRecord             |
+|     <<struct>>       |        |   <<struct - serializacja DB>>     |
++----------------------+        +------------------------------------+
+| + year: int          |        | + type: string ("SPA"/"MEAL"/      |
+| + month: int         |        |        "POOL"/"PROMO")             |
+| + day: int           |        | + spaSessions: int                 |
++----------------------+        | + mealPlan: int                    |
+| + IsValid(): bool    |        | + poolDays: int                    |
+| + ToSerial(): long   |        | + poolSunbed/poolTowel: bool       |
+| + FromSerial(s): Date|        | + promoCode: string                |
+| + Parse(s): Date     |        | + promoDiscount: double            |
+| + ToString(): string |        +------------------------------------+
+| + operator <,<=,>,>= |
+| + operator ==, !=    |
++----------------------+
+  operator<<(os, Date)   - wypisanie daty (YYYY-MM-DD)
+  operator<<(os, Room)   - wypisanie pokoju (Describe)
+  operator<<(os, Reservation) - pelny wydruk rezerwacji
+  Room::operator== / !=  - porownanie po numerze pokoju
+  DaysBetween(a,b) / RangesOverlap(...) - funkcje pomocnicze
+
+==========================================================================
+  Relacje z baza danych (Database <-> tabele MySQL):
+    klienci(id, name, lastname)
+    pokoje(id, room_number, type, capacity, price)            <-> Room
+    rezerwacje(id, klient_id, room_id, room_number, guests,
+               reservation_price, promo_applied,
+               visiting_start, visiting_end)                  <-> Reservation
+    uslugi(id, rezerwacja_id, service_type, spa_sessions,
+           meal_plan, pool_days, pool_sunbed, pool_towel,
+           promo_code, promo_discount)                        <-> Service
+==========================================================================
