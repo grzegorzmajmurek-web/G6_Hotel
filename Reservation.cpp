@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
+#include <algorithm>
  
 Reservation::Reservation(int id,
                          std::shared_ptr<Room> room,
@@ -26,6 +27,17 @@ Reservation::Reservation(int id,
 void Reservation::AddService(std::unique_ptr<Service> service)
 {
     m_services.push_back(std::move(service));
+}
+
+void Reservation::RemovePromoCodes()
+{
+    m_services.erase(
+        std::remove_if(m_services.begin(), m_services.end(),
+                       [](const std::unique_ptr<Service>& s) {
+                           return s->GetName().find("Rabat") == 0;
+                       }),
+        m_services.end()
+    );
 }
  
 int Reservation::Nights() const
