@@ -50,3 +50,24 @@ Reservation.h / Reservation.cpp                     Klasa Reservation — przech
 PromoCodeService.h / PromoCodeService.cpp           Implementacja rabatów jako Service
 ServiceSeasonalPricing.h / SeasonalPricing.cpp      Obsługa sezonowych zmian cen
 Date.h / Date.cpp                                   Klasa Date — parsowanie, porównywanie i wyświetlanie dat
+
+## 4. Kompilacja i uruchomienie
+
+# 1. Sklonuj repozytorium
+git clone https://github.com/grzegorzmajmurek-web/G6_Hotel.git
+cd G6_Hotel
+
+# 2. Skompiluj wszystkie pliki .cpp
+g++ -std=c++17 -Wall -o hotel \
+    Hotel.cpp HotelImpl.cpp Room.cpp Service.cpp \
+    Reservation.cpp PromoCodeService.cpp SeasonalPricing.cpp Date.cpp
+
+# 3. Uruchom
+./hotel
+
+Visual Studio (Windows)
+
+Otwórz Visual Studio → Utwórz nowy projekt → Pusty projekt C++
+Przeciągnij wszystkie pliki .cpp i .h do projektu
+W Właściwości projektu ustaw Standard języka C++ na C++17
+Naciśnij Ctrl+F5 (Uruchom bez debugowania)
