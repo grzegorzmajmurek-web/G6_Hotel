@@ -4,87 +4,49 @@ System zarządzania rezerwacjami hotelowymi umożliwiający obsługę klientów,
 
 ---
 
-## 1. System rezerwacji
+## 1. Opis projektu
 
-Moduł odpowiedzialny za tworzenie i zarządzanie rezerwacjami gości.
+G6_Hotel symuluje działanie recepcji hotelowej. Po uruchomieniu program inicjuje hotel „Pod Gwiazdami" z pięcioma pokojami (101, 102, 201, 202, 301) i udostępnia interaktywne menu konsolowe, przez które można zarządzać całym cyklem życia rezerwacji.
 
-### Funkcjonalności
-- Tworzenie rezerwacji dla:
-  - rodzin
-  - grup
-  - par
-  - pojedynczych osób
-- Sprawdzanie dostępności pokoi w wybranym terminie
-- Potwierdzanie rezerwacji
-- Odmowa rezerwacji w przypadku braku dostępności pokoi
-- Przegląd aktualnych rezerwacji
+## 2. Funkcjonalności
+Funkcjonalności
+Zarządzanie pokojami
 
----
+Przeglądanie katalogu pokoi trzech typów: Standard (200 zł/noc, 2 osoby), Deluxe (350 zł/noc, 3 osoby), Suite (600 zł/noc, 4 osoby)
+Sprawdzanie dostępności pokoi w wybranym terminie
+Filtrowanie pokoi według liczby gości
 
-## 2. System zniżek
+Rezerwacje
 
-Moduł pozwalający na zarządzanie rabatami dla klientów.
+Tworzenie rezerwacji dla pojedynczej osoby, pary lub rodziny/grupy (do 4 osób)
+Walidacja dat (przyjazd musi być wcześniejszy niż wyjazd) i pojemności pokoju
+Anulowanie istniejącej rezerwacji po ID
+Przegląd wszystkich aktywnych rezerwacji z podsumowaniem kosztów
 
-### Funkcjonalności
-- Dodawanie nowych zniżek
-- Usuwanie istniejących zniżek
-- Przypisywanie zniżek do:
-  - określonych ofert
-  - wybranych terminów
-  - określonych typów klientów
+Usługi dodatkowe
 
----
+Dodawanie SPA do rezerwacji (180 zł za sesję)
+Dodawanie wyżywienia w trzech wariantach: śniadania (Breakfast), śniadania i obiadokolacje (Half Board), pełne wyżywienie (Full Board)
 
-## 3. Forma wyżywienia
+Kody rabatowe
 
-Moduł opisujący dostępne opcje wyżywienia dla gości hotelu.
+RODZINA – 10% zniżki dla rezerwacji na min. 3 osoby
+LATO – stały rabat 50 zł
+DLUGIPOBYT – 5% (3+ noce), 10% (7+ noce), 20% (14+ noce)
+Każda rezerwacja może mieć tylko jeden aktywny kod; możliwe jest jego usunięcie i zastąpienie nowym
 
-### Dostępne opcje
-- Śniadania
-- Śniadania i obiadokolacje
-- Pełne wyżywienie
+Kalendarz
 
-### Dodatkowe funkcje
-- Oferty specjalne
-- Zniżki na wyżywienie
-- Nowości w menu
+Wyświetlanie grafiku zajętości wybranego pokoju dla konkretnego miesiąca i roku
 
----
+## 3. Struktura projektu
 
-## 4. Udogodnienia hotelowe
-
-Lista usług dodatkowych dostępnych dla gości hotelowych, które zwiększają komfort pobytu oraz oferują dodatkowe formy relaksu i rekreacji.
-
-### Dostępne udogodnienia
-
-#### Spa
-Strefa relaksu przeznaczona dla gości chcących odpocząć i zregenerować siły.
-
-Dostępne usługi:
-- sauna sucha i parowa  
-- masaże relaksacyjne i lecznicze  
-- zabiegi pielęgnacyjne na twarz i ciało  
-- strefa odpoczynku z leżakami  
-
-#### Basen
-Strefa rekreacyjna dostępna dla gości hotelowych.
-
-Udogodnienia:
-- basen rekreacyjny dla dorosłych  
-- brodzik dla dzieci  
-- możliwość korzystania z leżaków przy basenie  
-- ratownik obecny w godzinach otwarcia  
-
-#### Płatności
-Obsługa różnych metod płatności za pobyt oraz dodatkowe usługi hotelowe.
-
-## 5. Sprawdzanie dostępności pokoi
-
-Funkcja umożliwiająca szybkie sprawdzenie dostępności pokoi.
-
-### Funkcjonalności
-- Sprawdzenie dostępnych pokoi w wybranym terminie
-- Filtrowanie pokoi według:
-  - liczby osób
-  - standardu
-  - ceny
+Plik                                                Opis
+Hotel.cpp                                           Punkt wejścia (main), logika menu, przepływy interakcji
+Hotel.h / HotelImpl.cpp                             Klasa Hotel — zarządzanie pokojami i rezerwacjami
+Room.h / Room.cpp                                   Abstrakcyjna klasa Room i podklasy StandardRoom, DeluxeRoom, Suite
+Service.h / Service.cpp                             Abstrakcyjna klasa Service i podklasy SpaService
+Reservation.h / Reservation.cpp                     Klasa Reservation — przechowuje dane rezerwacji i oblicza koszt
+PromoCodeService.h / PromoCodeService.cpp           Implementacja rabatów jako Service
+ServiceSeasonalPricing.h / SeasonalPricing.cpp      Obsługa sezonowych zmian cen
+Date.h / Date.cpp                                   Klasa Date — parsowanie, porównywanie i wyświetlanie dat
