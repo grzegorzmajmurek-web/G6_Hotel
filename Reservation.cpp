@@ -1,0 +1,109 @@
+#include "Reservation.h"
+#include "SeasonalPricing.h"
+#include <iostream>
+#include <ostream>
+#include <iomanip>
+#include <stdexcept>
+#include <algorithm>
+ 
+Reservation::Reservation(int id,
+                         std::shared_ptr<Room> room,
+                         std::string guestName,
+                         int guests,
+                         Date checkIn,
+                         Date checkOut)
+    : m_id(id),
+      m_room(std::move(room)),
+      m_guestName(std::move(guestName)),
+      m_guests(guests),
+      m_checkIn(checkIn),
+      m_checkOut(checkOut)
+{
+    if (!(m_checkIn < m_checkOut))
+        throw std::invalid_argument("Data wyjazdu musi byc pozniejsza od przyjazdu.");
+    if (m_guests <= 0 || m_guests > m_room->GetCapacity())
+        throw std::invalid_argument("Nieprawidlowa liczba gosci dla tego pokoju.");
+}
+ 
+void Reservation::AddService(std::unique_ptr<Service> service)
+{
+    m_services.push_back(std::move(service));
+}
+
+void Reservation::RemovePromoCodes()
+{
+    m_services.erase(
+        std::remove_if(m_services.begin(), m_services.end(),
+                       [](const std::unique_ptr<Service>& s) {
+                           return s->GetName().find("Rabat") == 0;
+                       }),
+        m_services.end()
+    );
+    m_promoApplied = false;
+}
+ 
+int Reservation::Nights() const
+{
+    return DaysBetween(m_checkIn, m_checkOut);
+}
+ 
+double Reservation::CalculateRoomCost() const
+{
+    double total = 0.0;
+    const double base = m_room->GetBasePricePerNight();
+    long from = m_checkIn.ToSerial();
+    long to = m_checkOut.ToSerial();
+    for (long s = from; s < to; ++s)
+    {
+        Date d = Date::FromSerial(s);
+        total += base * SeasonalPricing::GetMultiplier(d);
+    }
+    return total;
+}
+ 
+double Reservation::CalculateServicesCost() const
+{
+    double total = 0.0;
+    const int n = Nights();
+    for (const auto& s : m_services)
+        total += s->GetCost(n, m_guests);
+    return total;
+}
+ 
+double Reservation::CalculateTotal() const
+{
+    return CalculateRoomCost() + CalculateServicesCost();
+}
+ 
+std::ostream& operator<<(std::ostream& os, const Reservation& r)
+{
+    os << "Rezerwacja #" << r.m_id
+<< " | Gosc: " << r.m_guestName
+<< " | " << r.m_checkIn << " -> " << r.m_checkOut
+<< " (" << r.Nights() << " nocy)\n"
+<< "   " << *r.m_room << "\n"
+<< "   Osob: " << r.m_guests << "\n";
+
+    if (!r.m_services.empty())
+    {
+        os << "   Uslugi dodatkowe:\n";
+        const int n = r.Nights();
+        for (const auto& s : r.m_services)
+        {
+            os << "     - " << s->GetName()
+<< " : " << std::fixed << std::setprecision(2)
+<< s->GetCost(n, r.m_guests) << " PLN\n";
+        }
+    }
+
+    os << std::fixed << std::setprecision(2)
+<< "   Koszt pokoju (sezonowo): " << r.CalculateRoomCost() << " PLN\n"
+<< "   Koszt uslug: " << r.CalculateServicesCost() << " PLN\n"
+<< "   RAZEM: " << r.CalculateTotal() << " PLN\n";
+    return os;
+}
+
+void Reservation::Print() const
+{
+    std::cout << *this;
+}
